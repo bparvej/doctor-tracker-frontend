@@ -44,7 +44,7 @@ All environment variables must be declared in `.env.local` for local development
 
 ```env
 # URL pointing to the running Fastify backend
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_API_URL=https://doctor-tracker-backend-gfj8.onrender.com/api
 
 # Request timeout in milliseconds (default 15000)
 NEXT_PUBLIC_API_TIMEOUT=15000
@@ -52,6 +52,9 @@ NEXT_PUBLIC_API_TIMEOUT=15000
 # Environment flag
 NEXT_PUBLIC_ENV=development
 ```
+
+> **Live Backend API**: [https://doctor-tracker-backend-gfj8.onrender.com/api](https://doctor-tracker-backend-gfj8.onrender.com/api)  
+> **Swagger UI Documentation**: [https://doctor-tracker-backend-gfj8.onrender.com/api/docs](https://doctor-tracker-backend-gfj8.onrender.com/api/docs)
 
 > **IMPORTANT**: In Next.js, variables accessible in client-side code must begin with `NEXT_PUBLIC_`. Never place private secrets (database passwords, private keys) in frontend environment variables.
 
@@ -197,8 +200,7 @@ NEXT_PUBLIC_ENV=development
 
 | Issue | Cause | Resolution |
 | :--- | :--- | :--- |
-| **"Backend API Offline" warning in header** | Fastify backend is not running or wrong port in `.env.local` | Check if backend is active. Verify `NEXT_PUBLIC_API_URL=http://localhost:5000/api`. |
+| **"Backend API Offline" warning in header** | Fastify backend on Render is idling/spinning up or offline | Allow 30–60s for Render free instances to spin up, then click "Retry" in header or error banner. |
 | **`useSearchParams()` prerender warning** | Client component calling `useSearchParams()` not enclosed in Suspense | Wrap the consuming component inside a `<Suspense fallback={...}>` block. |
 | **401 Unauthorized redirect loop** | Stored JWT token has expired or is invalid | Cleared automatically by `api.js` on 401; log in with valid credentials. |
 | **EPERM error during local build on Windows** | Node process file lock on `.next` directory | Delete `.next` folder (`rm -rf .next` or `Remove-Item -Recurse .next`) and rebuild. |
-

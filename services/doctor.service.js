@@ -7,23 +7,34 @@ export const doctorService = {
   async getDoctors(queryParams = {}) {
     try {
       const response = await api.get('/doctors', queryParams);
-      // Support various response structures: { data, total, page, totalPages } or { doctors, total } or array
-      if (Array.isArray(response)) {
+      
+      // Fastify backend returns { success: true, data: { items, total, ... } } or { data: [...], total }
+      const payload = response.data !== undefined ? response.data : response;
+
+      if (Array.isArray(payload)) {
         return {
-          doctors: response,
-          total: response.length,
+          doctors: payload,
+          total: response.total ?? response.count ?? payload.length,
           page: queryParams.page || 1,
           limit: queryParams.limit || 10,
-          totalPages: Math.ceil(response.length / (queryParams.limit || 10)),
+          totalPages: Math.ceil(payload.length / (queryParams.limit || 10)),
         };
       }
 
+      const doctorsList = payload.doctors || payload.items || payload.data || [];
+      const totalCount =
+        payload.total ??
+        payload.totalCount ??
+        response.total ??
+        response.count ??
+        doctorsList.length;
+
       return {
-        doctors: response.data || response.doctors || [],
-        total: response.total ?? response.count ?? (response.data?.length || 0),
-        page: response.page || queryParams.page || 1,
-        limit: response.limit || queryParams.limit || 10,
-        totalPages: response.totalPages || Math.ceil((response.total || 0) / (queryParams.limit || 10)) || 1,
+        doctors: doctorsList,
+        total: totalCount,
+        page: payload.page || queryParams.page || 1,
+        limit: payload.limit || queryParams.limit || 10,
+        totalPages: payload.totalPages || Math.ceil(totalCount / (queryParams.limit || 10)) || 1,
       };
     } catch (error) {
       console.error('[doctorService.getDoctors] Error:', error);
@@ -45,11 +56,19 @@ export const doctorService = {
   },
 
   /**
-   * Create new doctor
+   * Create new doctor - strictly matches Fastify schema
    */
   async createDoctor(payload) {
     try {
-      const response = await api.post('/doctors', payload);
+      // Backend schema: required [name, specialization, hospital, phone, email], additionalProperties: false
+      const cleanPayload = {
+        name: payload.name.trim(),
+        specialization: payload.specialization.trim(),
+        hospital: payload.hospital.trim(),
+        phone: payload.phone.trim(),
+        email: payload.email.trim(),
+      };
+      const response = await api.post('/doctors', cleanPayload);
       return response.data || response.doctor || response;
     } catch (error) {
       console.error('[doctorService.createDoctor] Error:', error);
@@ -58,11 +77,18 @@ export const doctorService = {
   },
 
   /**
-   * Update existing doctor
+   * Update existing doctor - strictly matches Fastify schema
    */
   async updateDoctor(id, payload) {
     try {
-      const response = await api.put(`/doctors/${id}`, payload);
+      const cleanPayload = {};
+      if (payload.name) cleanPayload.name = payload.name.trim();
+      if (payload.specialization) cleanPayload.specialization = payload.specialization.trim();
+      if (payload.hospital) cleanPayload.hospital = payload.hospital.trim();
+      if (payload.phone) cleanPayload.phone = payload.phone.trim();
+      if (payload.email) cleanPayload.email = payload.email.trim();
+
+      const response = await api.put(`/doctors/${id}`, cleanPayload);
       return response.data || response.doctor || response;
     } catch (error) {
       console.error(`[doctorService.updateDoctor] Error for ${id}:`, error);
@@ -88,24 +114,25 @@ export const doctorService = {
    */
   async getDoctorPatients(doctorId, queryParams = {}) {
     try {
-      // First try dedicated subroute, fallback to filtered patients query
-      const response = await api.get(`/doctors/${doctorId}/patients`, queryParams).catch((err) => {
-        // If /doctors/:id/patients is not implemented, query /patients?doctorId=:id
+      const response = await api.get(`/doctors/${doctorId}/patients`, queryParams).catch(() => {
         return api.get('/patients', { doctorId, ...queryParams });
       });
 
-      if (Array.isArray(response)) {
+      const payload = response.data !== undefined ? response.data : response;
+
+      if (Array.isArray(payload)) {
         return {
-          patients: response,
-          total: response.length,
+          patients: payload,
+          total: payload.length,
         };
       }
 
+      const patientsList = payload.patients || payload.items || payload.data || [];
       return {
-        patients: response.data || response.patients || [],
-        total: response.total ?? response.count ?? (response.data?.length || 0),
-        page: response.page || queryParams.page || 1,
-        totalPages: response.totalPages || 1,
+        patients: patientsList,
+        total: payload.total ?? payload.count ?? patientsList.length,
+        page: payload.page || queryParams.page || 1,
+        totalPages: payload.totalPages || 1,
       };
     } catch (error) {
       console.error(`[doctorService.getDoctorPatients] Error for doctor ${doctorId}:`, error);
@@ -118,10 +145,24 @@ export const doctorService = {
    */
   async addPatientToDoctor(doctorId, patientData) {
     try {
-      // Try /doctors/:id/patients first, then fallback to /patients with doctorId
-      return await api.post(`/doctors/${doctorId}/patients`, patientData).catch(() => {
-        return api.post('/patients', { ...patientData, doctorId });
-      });
+      // Backend schema for POST /api/doctors/{id}/patients:
+      // required: [name, age, gender, phone, condition], gender enum: [MALE, FEMALE, OTHER], additionalProperties: false
+      const genderUpper = (patientData.gender || 'MALE').toUpperCase();
+      const validGender = ['MALE', 'FEMALE', 'OTHER'].includes(genderUpper) ? genderUpper : 'OTHER';
+
+      const cleanPayload = {
+        name: patientData.name.trim(),
+        age: parseInt(patientData.age, 10),
+        gender: validGender,
+        phone: patientData.phone ? patientData.phone.trim() : 'N/A',
+        condition: patientData.condition || 'Stable',
+      };
+
+      if (patientData.email && patientData.email.trim()) {
+        cleanPayload.email = patientData.email.trim();
+      }
+
+      return await api.post(`/doctors/${doctorId}/patients`, cleanPayload);
     } catch (error) {
       console.error(`[doctorService.addPatientToDoctor] Error:`, error);
       throw error;
@@ -134,8 +175,7 @@ export const doctorService = {
   async removePatientFromDoctor(doctorId, patientId) {
     try {
       return await api.delete(`/doctors/${doctorId}/patients/${patientId}`).catch(() => {
-        // Fallback: unlink via PATCH /patients/:id { doctorId: null } or delete patient
-        return api.patch(`/patients/${patientId}`, { doctorId: null });
+        return api.delete(`/patients/${patientId}`);
       });
     } catch (error) {
       console.error(`[doctorService.removePatientFromDoctor] Error:`, error);
@@ -143,4 +183,3 @@ export const doctorService = {
     }
   },
 };
-

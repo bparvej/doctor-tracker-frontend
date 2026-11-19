@@ -1,7 +1,7 @@
 export const APP_CONFIG = {
   name: 'Doctor Tracker',
   version: '1.0.0',
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'https://doctor-tracker-backend-gfj8.onrender.com/api',
   apiTimeout: parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT || '15000', 10),
   storageKeys: {
     token: 'doc_tracker_token',
@@ -72,4 +72,3 @@ export const AUDIT_ENTITIES = [
   'AUTH',
   'USER',
 ];
-

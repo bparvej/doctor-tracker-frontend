@@ -26,13 +26,16 @@
 +---------------------------------------------------------------------------------+
 |                                 BACKEND TIER                                    |
 |                                                                                 |
-|  Fastify Node.js Application + MongoDB Database (Separate Repository)           |
+|  Fastify Node.js Application + MongoDB Database                                 |
+|  Host: https://doctor-tracker-backend-gfj8.onrender.com                         |
+|  API Prefix: /api                                                               |
+|  Swagger UI: https://doctor-tracker-backend-gfj8.onrender.com/api/docs           |
 |                                                                                 |
 |  Endpoints:                                                                     |
 |  - /api/auth/login, /api/auth/logout, /api/auth/me                              |
 |  - /api/doctors (CRUD, /doctors/:id/patients)                                   |
 |  - /api/patients (CRUD, filters by doctor, condition, date)                     |
-|  - /api/dashboard (aggregate stats)                                             |
+|  - /api/dashboard/stats (aggregate stats)                                       |
 |  - /api/audit-logs (read-only audit trail)                                      |
 +---------------------------------------------------------------------------------+
 ```
@@ -87,7 +90,7 @@ All outbound HTTP calls flow through an `ApiClient` singleton with built-in resi
 
 ### Key Features:
 1. **Dynamic URL Resolution**:
-   - Reads `process.env.NEXT_PUBLIC_API_URL` (default: `http://localhost:5000/api`). Never hardcodes absolute URLs.
+   - Reads `process.env.NEXT_PUBLIC_API_URL` (default: `https://doctor-tracker-backend-gfj8.onrender.com/api`). Never hardcodes absolute URLs.
 2. **Automatic Header & Token Injection**:
    - Automatically retrieves Bearer token from `safeStorage` and attaches `Authorization: Bearer <token>`.
    - Supports cross-origin credential forwarding (`credentials: 'include'`) for environments using HttpOnly session cookies.
@@ -154,4 +157,3 @@ To prevent performance degradation with large medical databases:
 | **Recharts Visualization** | Lightweight, SVG-based responsive charting tailored for React with zero DOM footprint leaks. |
 | **Centralized Fetch Wrapper** | Avoids external HTTP dependencies (e.g., Axios), minimizing bundle size while offering full control over timeouts, headers, and custom network error events. |
 | **Standalone Output Mode (`output: 'standalone'`)** | Trims Docker container image size from >1GB to ~160MB by bundling only necessary production node_modules traces. |
-

@@ -14,7 +14,7 @@ COPY . .
 
 # Set environment variables for build
 ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000/api}
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://doctor-tracker-backend-gfj8.onrender.com/api}
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
@@ -42,4 +42,3 @@ USER nextjs
 EXPOSE 3000
 
 CMD ["node", "server.js"]
-

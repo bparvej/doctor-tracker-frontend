@@ -5,7 +5,10 @@
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.4.14-38bdf8?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A modern, responsive, and secure administrative web application engineered for managing medical doctors, patients, clinical assignments, and system audit trails. Doctor Tracker communicates via RESTful JSON APIs with a standalone Fastify + MongoDB backend and is fully containerized and deployable to **Vercel**, **Render**, or any Docker-compatible infrastructure.
+A modern, responsive, and secure administrative web application engineered for managing medical doctors, patients, clinical assignments, and system audit trails. Doctor Tracker communicates via RESTful JSON APIs with a standalone Fastify + MongoDB backend deployed on Render and is fully containerized and deployable to **Vercel**, **Render**, or any Docker-compatible infrastructure.
+
+- **Live Backend API**: [https://doctor-tracker-backend-gfj8.onrender.com/api](https://doctor-tracker-backend-gfj8.onrender.com/api)
+- **Interactive Swagger Documentation**: [https://doctor-tracker-backend-gfj8.onrender.com/api/docs](https://doctor-tracker-backend-gfj8.onrender.com/api/docs)
 
 ---
 
@@ -24,7 +27,7 @@ A modern, responsive, and secure administrative web application engineered for m
    - **Patients per Doctor**: Interactive Recharts bar chart displaying workload distribution.
    - **Patient Registration Trends**: Recharts line chart illustrating intake trends.
    - **Recent Activity**: Quick-access tables for recently onboarded doctors and registered patients.
-   - Zero fabricated metrics—all stats map directly to live backend collections.
+   - Integrated with the live `/api/dashboard/stats` backend endpoint.
 
 3. **Doctor Management**
    - Full CRUD operations: Create, Read, Update, Delete with confirmation modals.
@@ -35,12 +38,12 @@ A modern, responsive, and secure administrative web application engineered for m
 
 4. **Patient Management**
    - Full CRUD: Register, inspect, edit, and delete patient records.
-   - Track Patient Name, Age, Gender, Condition, Attending Doctor, and Contact details.
+   - Track Patient Name, Age, Gender (`MALE`, `FEMALE`, `OTHER`), Condition, Attending Doctor, and Contact details.
    - Filters: Patient Condition (Critical, Stable, Under Observation, Recovering), Attending Doctor, and Date of Registration.
    - Server-side debounced search and pagination.
 
 5. **Audit Trail & System Logs**
-   - Read-only historical ledger of administrative transactions.
+   - Read-only historical ledger of administrative transactions (`/api/audit-logs`).
    - Tracks Timestamp, User/Actor, Action (CREATE, UPDATE, DELETE, LOGIN, ASSIGN), Entity Type, Entity ID, and Network IP.
    - Searchable and filterable by Action, Entity, and Date range.
    - Detailed modal inspection with automatic sanitization of sensitive keys (passwords, tokens).
@@ -149,9 +152,9 @@ Copy `.env.example` to `.env.local`:
 ```bash
 cp .env.example .env.local
 ```
-Ensure `NEXT_PUBLIC_API_URL` points to your active Fastify backend:
+Configured with the active Fastify backend on Render:
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_API_URL=https://doctor-tracker-backend-gfj8.onrender.com/api
 NEXT_PUBLIC_API_TIMEOUT=15000
 NEXT_PUBLIC_ENV=development
 ```
@@ -181,7 +184,7 @@ The application will be compiled and hosted at `http://localhost:3000`.
 
 ### Manual Docker Build & Run
 ```bash
-docker build -t doctor-tracker-frontend:latest --build-arg NEXT_PUBLIC_API_URL=http://localhost:5000/api .
+docker build -t doctor-tracker-frontend:latest --build-arg NEXT_PUBLIC_API_URL=https://doctor-tracker-backend-gfj8.onrender.com/api .
 docker run -p 3000:3000 doctor-tracker-frontend:latest
 ```
 
@@ -194,30 +197,29 @@ docker run -p 3000:3000 doctor-tracker-frontend:latest
 2. Import the project into the [Vercel Dashboard](https://vercel.com/).
 3. Framework preset will automatically detect **Next.js**.
 4. In **Environment Variables**, add:
-   - `NEXT_PUBLIC_API_URL`: Your deployed Fastify backend URL (e.g., `https://doctor-tracker-api.onrender.com/api`).
+   - `NEXT_PUBLIC_API_URL`: `https://doctor-tracker-backend-gfj8.onrender.com/api`
 5. Click **Deploy**.
 
 ### Deploying to Render (Web Service or Docker)
 - **Option A (Node Service)**:
   - Build Command: `npm install && npm run build`
   - Start Command: `npm run start`
-  - Environment Variable: `NEXT_PUBLIC_API_URL=https://<your-backend>.onrender.com/api`
+  - Environment Variable: `NEXT_PUBLIC_API_URL=https://doctor-tracker-backend-gfj8.onrender.com/api`
 - **Option B (Docker Service)**:
   - Select "Docker" as runtime.
-  - Set Build Argument `NEXT_PUBLIC_API_URL` in Render Environment settings.
+  - Set Build Argument `NEXT_PUBLIC_API_URL` to `https://doctor-tracker-backend-gfj8.onrender.com/api`.
 
 ---
 
 ## 8. Backend Down & Offline Error Resilience
 
-If the Fastify backend server is paused, restarting, or unreachable:
-1. **Header Health Pill**: Automatically switches from "Backend API Connected" to "API Offline".
+If the Fastify backend server on Render is paused (spinning down during idle), restarting, or unreachable:
+1. **Header Health Pill**: Automatically switches from "Backend API Connected" to "API Offline" or "API Timed Out".
 2. **Prominent Error Banners**: Explains that the backend server is unreachable at `NEXT_PUBLIC_API_URL`.
-3. **Retry Button**: Allows administrators to re-test backend connectivity once the server is back online without refreshing the entire page.
+3. **Retry Button**: Allows administrators to re-test backend connectivity once the server has spun back up without refreshing the entire page.
 
 ---
 
 ## 9. License
 
 This project is licensed under the MIT License.
-

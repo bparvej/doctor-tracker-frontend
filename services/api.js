@@ -20,7 +20,7 @@ export class ApiError extends Error {
  */
 class ApiClient {
   constructor() {
-    this.baseUrl = APP_CONFIG.apiUrl.replace(/\/+$/, '');
+    this.baseUrl = (APP_CONFIG.apiUrl || 'https://doctor-tracker-backend-gfj8.onrender.com/api').replace(/\/+$/, '');
     this.defaultTimeout = APP_CONFIG.apiTimeout;
   }
 
@@ -56,8 +56,11 @@ class ApiClient {
       ...customOptions
     } = options;
 
+    // Ensure baseUrl is current
+    const currentBaseUrl = (process.env.NEXT_PUBLIC_API_URL || APP_CONFIG.apiUrl || 'https://doctor-tracker-backend-gfj8.onrender.com/api').replace(/\/+$/, '');
+
     // Build URL with query params
-    let url = `${this.baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+    let url = `${currentBaseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     if (params) {
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
@@ -109,28 +112,30 @@ class ApiClient {
 
       // Handle 401 Unauthorized
       if (response.status === 401) {
+        const unauthMsg =
+          responseData?.error?.message ||
+          responseData?.message ||
+          'Session expired. Please log in again to continue.';
+
         console.warn('[ApiClient] Session expired or unauthorized (401) at', endpoint);
         safeStorage.removeItem(APP_CONFIG.storageKeys.token);
         safeStorage.removeItem(APP_CONFIG.storageKeys.user);
         
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('auth:unauthorized', {
-            detail: { message: responseData?.message || 'Session expired. Please log in again.' }
+            detail: { message: unauthMsg }
           }));
         }
 
-        throw new ApiError(
-          responseData?.message || 'Unauthorized: Please log in again to continue.',
-          401,
-          responseData
-        );
+        throw new ApiError(unauthMsg, 401, responseData);
       }
 
       // Handle other HTTP errors
       if (!response.ok) {
         const errorMessage =
+          responseData?.error?.message ||
           responseData?.message ||
-          responseData?.error ||
+          (typeof responseData?.error === 'string' ? responseData.error : null) ||
           `Request failed with status ${response.status} (${response.statusText})`;
 
         console.error(`[ApiClient Error] ${method} ${url} [${response.status}]:`, responseData || errorMessage);
@@ -162,7 +167,7 @@ class ApiClient {
 
       // Handle Network failures (backend down, connection refused, DNS failure)
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        const downMsg = `Unable to reach the backend server at ${this.baseUrl}. Please verify the Fastify API is running.`;
+        const downMsg = `Unable to reach the backend server at ${currentBaseUrl}. Please verify the Fastify API is online.`;
         console.error(`[ApiClient Server Down] ${method} ${url}:`, error);
 
         if (typeof window !== 'undefined') {
@@ -205,4 +210,3 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
-
