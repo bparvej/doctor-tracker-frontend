@@ -5,7 +5,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.4.14-38bdf8?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A modern, responsive, and secure administrative web application engineered for managing medical doctors, patients, clinical assignments, and system audit trails. Doctor Tracker communicates via RESTful JSON APIs with a standalone Fastify + MongoDB backend deployed on Render and is fully containerized and deployable to **Vercel**, **Render**, or any Docker-compatible infrastructure.
+A modern, responsive, and secure administrative web application engineered for managing medical doctors, patients, clinical assignments, and system audit trails. Doctor Tracker communicates via RESTful JSON APIs with a standalone Express.js + MongoDB backend deployed on Render and is fully containerized and deployable to **Vercel**, **Render**, or any Docker-compatible infrastructure.
 
 - **Live Backend API**: [https://doctor-tracker-backend-gfj8.onrender.com/api](https://doctor-tracker-backend-gfj8.onrender.com/api)
 - **Interactive Swagger Documentation**: [https://doctor-tracker-backend-gfj8.onrender.com/api/docs](https://doctor-tracker-backend-gfj8.onrender.com/api/docs)
@@ -152,7 +152,7 @@ Copy `.env.example` to `.env.local`:
 ```bash
 cp .env.example .env.local
 ```
-Configured with the active Fastify backend on Render:
+Configured with the active Express.js backend on Render:
 ```env
 NEXT_PUBLIC_API_URL=https://doctor-tracker-backend-gfj8.onrender.com/api
 NEXT_PUBLIC_API_TIMEOUT=15000
@@ -213,7 +213,7 @@ docker run -p 3000:3000 doctor-tracker-frontend:latest
 
 ## 8. Backend Down & Offline Error Resilience
 
-If the Fastify backend server on Render is paused (spinning down during idle), restarting, or unreachable:
+If the Express.js backend server on Render is paused (spinning down during idle), restarting, or unreachable:
 1. **Header Health Pill**: Automatically switches from "Backend API Connected" to "API Offline" or "API Timed Out".
 2. **Prominent Error Banners**: Explains that the backend server is unreachable at `NEXT_PUBLIC_API_URL`.
 3. **Retry Button**: Allows administrators to re-test backend connectivity once the server has spun back up without refreshing the entire page.

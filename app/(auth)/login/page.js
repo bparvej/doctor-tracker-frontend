@@ -121,7 +121,7 @@ function LoginForm() {
       {/* Quick Demo Credentials / Environment Info */}
       <div className="mt-6 pt-5 border-t border-slate-100 text-center">
         <p className="text-[11px] text-slate-400">
-          Communicates with Fastify Backend at:
+          Communicates with Express Backend at:
         </p>
         <code className="text-[11px] font-mono text-slate-600 bg-slate-50 px-2 py-0.5 rounded border border-slate-200 inline-block mt-1">
           {APP_CONFIG.apiUrl}

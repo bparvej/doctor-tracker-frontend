@@ -43,7 +43,7 @@ Visit [http://localhost:3000](http://localhost:3000) in your browser.
 All environment variables must be declared in `.env.local` for local development and in the host provider dashboard (Vercel, Render) for production:
 
 ```env
-# URL pointing to the running Fastify backend
+# URL pointing to the running Express.js backend
 NEXT_PUBLIC_API_URL=https://doctor-tracker-backend-gfj8.onrender.com/api
 
 # Request timeout in milliseconds (default 15000)
@@ -200,7 +200,7 @@ NEXT_PUBLIC_ENV=development
 
 | Issue | Cause | Resolution |
 | :--- | :--- | :--- |
-| **"Backend API Offline" warning in header** | Fastify backend on Render is idling/spinning up or offline | Allow 30–60s for Render free instances to spin up, then click "Retry" in header or error banner. |
+| **"Backend API Offline" warning in header** | Express.js backend on Render is idling/spinning up or offline | Allow 30–60s for Render free instances to spin up, then click "Retry" in header or error banner. |
 | **`useSearchParams()` prerender warning** | Client component calling `useSearchParams()` not enclosed in Suspense | Wrap the consuming component inside a `<Suspense fallback={...}>` block. |
 | **401 Unauthorized redirect loop** | Stored JWT token has expired or is invalid | Cleared automatically by `api.js` on 401; log in with valid credentials. |
 | **EPERM error during local build on Windows** | Node process file lock on `.next` directory | Delete `.next` folder (`rm -rf .next` or `Remove-Item -Recurse .next`) and rebuild. |

@@ -54,7 +54,7 @@ export const patientService = {
   },
 
   /**
-   * Create new patient - strictly matches Fastify schema
+   * Create new patient - strictly matches Express.js API schema
    */
   async createPatient(payload) {
     try {
@@ -84,7 +84,7 @@ export const patientService = {
   },
 
   /**
-   * Update existing patient - strictly matches Fastify schema
+   * Update existing patient - strictly matches Express.js API schema
    */
   async updatePatient(id, payload) {
     try {

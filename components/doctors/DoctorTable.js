@@ -12,6 +12,7 @@ export default function DoctorTable({
   onEdit,
   onDelete,
   onManagePatients,
+  readOnly = false,
 }) {
   return (
     <div className="overflow-x-auto">
@@ -94,15 +95,18 @@ export default function DoctorTable({
                       <Eye className="w-4 h-4" />
                     </button>
 
-                    <button
-                      onClick={() => onEdit(doctor)}
-                      className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
-                      title="Edit Doctor"
-                      aria-label="Edit doctor"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
+                    {!readOnly && (
+                      <button
+                        onClick={() => onEdit(doctor)}
+                        className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
+                        title="Edit Doctor"
+                        aria-label="Edit doctor"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    )}
 
+                    {!readOnly && (
                     <button
                       onClick={() => onDelete(doctor)}
                       className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
@@ -111,6 +115,7 @@ export default function DoctorTable({
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
+                    )}
                   </div>
                 </td>
               </tr>

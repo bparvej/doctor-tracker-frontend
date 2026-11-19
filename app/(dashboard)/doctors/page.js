@@ -19,8 +19,10 @@ import { useToast } from '../../../hooks/useToast';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { MEDICAL_SPECIALIZATIONS, APP_CONFIG } from '../../../constants/config';
 import { Plus, Search, Filter, Stethoscope, RefreshCw, X } from 'lucide-react';
+import { useAuth } from '../../../hooks/useAuth';
 
 export default function DoctorsPage() {
+  const { isAdmin } = useAuth();
   const [doctors, setDoctors] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -151,17 +153,19 @@ export default function DoctorsPage() {
             Refresh
           </Button>
 
-          <Button
-            variant="primary"
-            size="sm"
-            icon={Plus}
-            onClick={() => {
-              setSelectedDoctor(null);
-              setIsFormOpen(true);
-            }}
-          >
-            Add New Doctor
-          </Button>
+          {isAdmin && (
+            <Button
+              variant="primary"
+              size="sm"
+              icon={Plus}
+              onClick={() => {
+                setSelectedDoctor(null);
+                setIsFormOpen(true);
+              }}
+            >
+              Add New Doctor
+            </Button>
+          )}
         </div>
       </div>
 
@@ -269,6 +273,7 @@ export default function DoctorsPage() {
                 setIsFormOpen(true);
               }}
               onDelete={(doc) => setDoctorToDelete(doc)}
+              readOnly={!isAdmin}
               onManagePatients={(doc) => {
                 setSelectedDoctor(doc);
                 setIsPatientModalOpen(true);

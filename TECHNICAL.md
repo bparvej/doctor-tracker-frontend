@@ -26,7 +26,7 @@
 +---------------------------------------------------------------------------------+
 |                                 BACKEND TIER                                    |
 |                                                                                 |
-|  Fastify Node.js Application + MongoDB Database                                 |
+|  Express.js Node.js Application + MongoDB Database                               |
 |  Host: https://doctor-tracker-backend-gfj8.onrender.com                         |
 |  API Prefix: /api                                                               |
 |  Swagger UI: https://doctor-tracker-backend-gfj8.onrender.com/api/docs           |

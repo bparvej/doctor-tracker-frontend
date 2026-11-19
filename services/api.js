@@ -13,13 +13,14 @@ export class ApiError extends Error {
     this.code = data?.error?.code || null;
     this.requestId = data?.requestId || null;
     this.success = data?.success ?? false;
+    this.details = data?.error?.details ?? null;
     this.isNetworkError = isNetworkError;
     this.timestamp = new Date().toISOString();
   }
 }
 
 /**
- * Centralized API client for communicating with the Fastify backend
+ * Centralized API client for communicating with the Express backend
  */
 class ApiClient {
   constructor() {
@@ -62,8 +63,9 @@ class ApiClient {
     // Ensure baseUrl is current
     const currentBaseUrl = (process.env.NEXT_PUBLIC_API_URL || APP_CONFIG.apiUrl || 'https://doctor-tracker-backend-gfj8.onrender.com/api').replace(/\/+$/, '');
 
-    // Build URL with query params
-    let url = `${currentBaseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+    // Build URL with query params. Avoid adding /api twice if an endpoint is already prefixed.
+    const normalizedEndpoint = endpoint.startsWith('/api/') ? endpoint.slice(4) : endpoint;
+    let url = `${currentBaseUrl}${normalizedEndpoint.startsWith('/') ? '' : '/'}${normalizedEndpoint}`;
     if (params) {
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
@@ -170,7 +172,7 @@ class ApiClient {
 
       // Handle Network failures (backend down, connection refused, DNS failure)
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        const downMsg = `Unable to reach the backend server at ${currentBaseUrl}. Please verify the Fastify API is online.`;
+        const downMsg = `Unable to reach the Express backend server at ${currentBaseUrl}. Please verify the API is online.`;
         console.error(`[ApiClient Server Down] ${method} ${url}:`, error);
 
         if (typeof window !== 'undefined') {

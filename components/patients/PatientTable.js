@@ -10,6 +10,7 @@ export default function PatientTable({
   onView,
   onEdit,
   onDelete,
+  readOnly = false,
 }) {
   const getConditionVariant = (cond) => {
     switch (cond?.toLowerCase()) {
@@ -115,14 +116,17 @@ export default function PatientTable({
                       <Eye className="w-4 h-4" />
                     </button>
 
-                    <button
-                      onClick={() => onEdit(patient)}
-                      className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
-                      title="Edit Patient"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
+                    {!readOnly && (
+                      <button
+                        onClick={() => onEdit(patient)}
+                        className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
+                        title="Edit Patient"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    )}
 
+                    {!readOnly && (
                     <button
                       onClick={() => onDelete(patient)}
                       className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
@@ -130,6 +134,7 @@ export default function PatientTable({
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
+                    )}
                   </div>
                 </td>
               </tr>

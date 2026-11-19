@@ -54,7 +54,7 @@ export default function ErrorBanner({
                 {APP_CONFIG.apiUrl}
               </code>
               <div className="mt-1 text-slate-600">
-                Ensure your Fastify backend server is running and accessible at this address.
+                Ensure your Express backend server is running and accessible at this address.
               </div>
             </div>
           )}

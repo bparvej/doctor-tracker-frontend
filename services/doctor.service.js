@@ -8,7 +8,7 @@ export const doctorService = {
     try {
       const response = await api.get('/doctors', queryParams);
       
-      // Fastify backend returns { success: true, data: { items, total, ... } } or { data: [...], total }
+      // Express.js backend returns { success: true, data: { items, total, ... } } or { data: [...], total }
       const payload = response.data !== undefined ? response.data : response;
 
       if (Array.isArray(payload)) {
@@ -56,7 +56,7 @@ export const doctorService = {
   },
 
   /**
-   * Create new doctor - strictly matches Fastify schema
+   * Create new doctor - strictly matches Express.js API schema
    */
   async createDoctor(payload) {
     try {
@@ -77,7 +77,7 @@ export const doctorService = {
   },
 
   /**
-   * Update existing doctor - strictly matches Fastify schema
+   * Update existing doctor - strictly matches Express.js API schema
    */
   async updateDoctor(id, payload) {
     try {

@@ -19,8 +19,10 @@ import { useToast } from '../../../hooks/useToast';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { PATIENT_CONDITIONS, APP_CONFIG } from '../../../constants/config';
 import { Plus, Search, Users, RefreshCw, X } from 'lucide-react';
+import { useAuth } from '../../../hooks/useAuth';
 
 export default function PatientsPage() {
+  const { isAdmin } = useAuth();
   const [patients, setPatients] = useState([]);
   const [doctorsList, setDoctorsList] = useState([]);
   const [total, setTotal] = useState(0);
@@ -174,17 +176,19 @@ export default function PatientsPage() {
             Refresh
           </Button>
 
-          <Button
-            variant="primary"
-            size="sm"
-            icon={Plus}
-            onClick={() => {
-              setSelectedPatient(null);
-              setIsFormOpen(true);
-            }}
-          >
-            Register Patient
-          </Button>
+          {isAdmin && (
+            <Button
+              variant="primary"
+              size="sm"
+              icon={Plus}
+              onClick={() => {
+                setSelectedPatient(null);
+                setIsFormOpen(true);
+              }}
+            >
+              Register Patient
+            </Button>
+          )}
         </div>
       </div>
 
@@ -293,6 +297,7 @@ export default function PatientsPage() {
           <>
             <PatientTable
               patients={patients}
+              readOnly={!isAdmin}
               onView={(pat) => {
                 setSelectedPatient(pat);
                 setIsDetailOpen(true);
