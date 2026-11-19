@@ -2,6 +2,12 @@ import { api } from './api';
 import { safeStorage } from '../utils/storage';
 import { APP_CONFIG } from '../constants/config';
 
+const normalizeUser = (user = {}) => ({
+  ...user,
+  role: typeof user.role === 'string' ? user.role.toUpperCase() : 'VIEWER',
+  isActive: user.isActive !== false,
+});
+
 export const authService = {
   /**
    * Log in user with credentials
@@ -9,21 +15,21 @@ export const authService = {
   async login(credentials) {
     try {
       const response = await api.post('/auth/login', credentials);
-      
-      // Fastify backend standard structures
-      const token = response.token || response.accessToken || response.data?.token || response.data?.accessToken;
-      const user = response.user || response.data?.user || { email: credentials.email || credentials.username };
+      const data = response?.data || response;
+      const token = data.token;
+      const user = normalizeUser(data.user);
 
-      if (token) {
-        safeStorage.setItem(APP_CONFIG.storageKeys.token, token);
+      if (!token || !data.user) {
+        throw new Error('The login response did not include authentication data.');
       }
-      if (user) {
-        safeStorage.setItem(APP_CONFIG.storageKeys.user, JSON.stringify(user));
+      if (!user.isActive) {
+        throw new Error('This account has been deactivated.');
       }
 
+      safeStorage.setItem(APP_CONFIG.storageKeys.token, token);
+      safeStorage.setItem(APP_CONFIG.storageKeys.user, JSON.stringify(user));
       return { token, user, raw: response };
     } catch (error) {
-      console.error('[authService.login] Error:', error);
       throw error;
     }
   },
@@ -33,9 +39,7 @@ export const authService = {
    */
   async logout() {
     try {
-      await api.post('/auth/logout', {}).catch((err) => {
-        console.warn('[authService.logout] Remote logout failed or not supported:', err.message);
-      });
+      await api.post('/auth/logout', {}).catch(() => undefined);
     } finally {
       safeStorage.removeItem(APP_CONFIG.storageKeys.token);
       safeStorage.removeItem(APP_CONFIG.storageKeys.user);
@@ -47,17 +51,21 @@ export const authService = {
    * Fetch current authenticated user profile
    */
   async getCurrentUser() {
-    try {
-      const response = await api.get('/auth/me');
-      const user = response.user || response.data?.user || response;
-      if (user) {
-        safeStorage.setItem(APP_CONFIG.storageKeys.user, JSON.stringify(user));
-      }
-      return user;
-    } catch (error) {
-      console.error('[authService.getCurrentUser] Error:', error);
-      throw error;
+    const response = await api.get('/auth/me');
+    const data = response?.data || response;
+    const user = normalizeUser(data.user || data);
+
+    if (!user.id && !user._id && !user.email) {
+      throw new Error('The current-user response did not include user data.');
     }
+    if (!user.isActive) {
+      safeStorage.removeItem(APP_CONFIG.storageKeys.token);
+      safeStorage.removeItem(APP_CONFIG.storageKeys.user);
+      throw new Error('This account has been deactivated.');
+    }
+
+    safeStorage.setItem(APP_CONFIG.storageKeys.user, JSON.stringify(user));
+    return user;
   },
 
   /**
@@ -68,7 +76,7 @@ export const authService = {
     if (!userStr) return null;
     try {
       return JSON.parse(userStr);
-    } catch (e) {
+    } catch {
       return null;
     }
   },

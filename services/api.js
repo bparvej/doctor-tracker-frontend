@@ -10,6 +10,9 @@ export class ApiError extends Error {
     this.name = 'ApiError';
     this.status = status;
     this.data = data;
+    this.code = data?.error?.code || null;
+    this.requestId = data?.requestId || null;
+    this.success = data?.success ?? false;
     this.isNetworkError = isNetworkError;
     this.timestamp = new Date().toISOString();
   }

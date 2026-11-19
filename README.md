@@ -220,6 +220,19 @@ If the Fastify backend server on Render is paused (spinning down during idle), r
 
 ---
 
-## 9. License
+## 9. RBAC & User Management
+
+- `NEXT_PUBLIC_API_URL` must be `https://doctor-tracker-backend-gfj8.onrender.com/api`.
+- Login is centralized through `POST /auth/login`; the JWT and `data.user` are stored only for authenticated sessions.
+- Supported roles are `ADMIN` and `VIEWER`. The `Users` page and navigation item are available only to `ADMIN` users.
+- `/auth/me` restores and validates the current session. A `401` response clears the JWT and cached user immediately.
+- Every authenticated API request sends `Authorization: Bearer <token>`.
+- Admin user CRUD uses `/users` and `/users/:id`. Creation requires name, email, password, role, and isActive; editing password is optional.
+- The backend may return `{ success, data, error: { code, message }, requestId }`. Errors and 403 responses are handled through the centralized API client.
+- Administrators cannot delete or deactivate themselves or change their own role.
+
+---
+
+## 10. License
 
 This project is licensed under the MIT License.

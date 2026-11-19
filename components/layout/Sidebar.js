@@ -19,6 +19,7 @@ const navItems = [
   { name: 'Doctors', href: '/doctors', icon: Stethoscope },
   { name: 'Patients', href: '/patients', icon: Users },
   { name: 'Audit Logs', href: '/audit-logs', icon: ShieldCheck },
+  { name: 'Users', href: '/users', icon: Users, adminOnly: true }, // Admin-only route
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -75,6 +76,10 @@ export default function Sidebar({ isOpen, onClose }) {
           {navItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
             const Icon = item.icon;
+
+            // Check if the user is admin or the item is not admin-only
+            const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
+            if (item.adminOnly && !isAdmin) return null; // Skip rendering admin-only items for non-admin users
 
             return (
               <Link

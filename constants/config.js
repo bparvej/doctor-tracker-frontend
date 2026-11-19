@@ -19,6 +19,7 @@ export const APP_CONFIG = {
     doctors: '/doctors',
     patients: '/patients',
     auditLogs: '/audit-logs',
+    users: '/users',
   },
 };
 
