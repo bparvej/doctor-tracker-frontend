@@ -253,7 +253,7 @@ If the Express.js backend server on Render is paused (spinning down during idle)
 | MongoDB indexing/query optimization | Backend responsibility | Frontend sends optimized paginated/filter parameters; implementation depends on backend indexes and endpoint queries |
 | System audit trail | Implemented | Read-only searchable audit records and sanitized detail modal |
 | RBAC | Partially implemented | Frontend and API support `ADMIN`/`VIEWER`; final enforcement must be verified in the backend |
-| Visual evidence (screenshots) | Partially implemented | Login desktop/mobile screenshots are included; remaining protected-page screenshots should be added |
+| Visual evidence (screenshots) | Implemented | Desktop/mobile screenshots cover login, dashboard, doctor management, patient management, and patient registration |
 | Submitted credentials/repository link | Pending | Add the public repository URL and demo credentials securely if required |
 
 ### Technical decisions
@@ -279,9 +279,31 @@ Browser / Next.js Client
 
 | Desktop | Mobile |
 | :---: | :---: |
-| ![Login page desktop](screenshots/login-desktop.png) | ![Login page mobile](screenshots/login-mobile.png) |
+| ![Login page desktop](screenshots/login-desktop.png) | ![Login page mobile](screenshots/login-mobile1.png) |
 
-Additional dashboard, doctor-management, and patient-management desktop/mobile screenshots can be added to `screenshots/` and displayed in this section before final submission.
+#### Dashboard
+
+| Desktop | Mobile |
+| :---: | :---: |
+| ![Dashboard desktop](screenshots/dashboard-desktop.png) | ![Dashboard mobile](screenshots/dashboard-mobile.png) |
+
+#### Doctor management
+
+| Desktop filter and doctor list | Mobile doctor view |
+| :---: | :---: |
+| ![Doctor list with filters](screenshots/doctor-listwith-filter.png) | ![Doctor management mobile](screenshots/doctor-mobile.png) |
+
+#### Patient management
+
+| Desktop pagination | Mobile patient list |
+| :---: | :---: |
+| ![Patient management pagination](screenshots/patient-management-with-pagignation.png) | ![Patient management mobile](screenshots/patient-mobile.png) |
+
+#### Patient registration
+
+Mobile patient registration form:
+
+![Patient registration mobile](screenshots/patient-register-mobile.png)
 
 ## 11. License
 
