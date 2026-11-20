@@ -67,6 +67,23 @@ function LoginForm() {
         </div>
       )}
 
+      {/* Backend wake-up notice */}
+      <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">
+        <p className="font-semibold">Please enable the backend first.</p>
+        <p className="mt-1">Open the backend link and wait for it to start before signing in:</p>
+        <a
+          href="https://doctor-tracker-backend-gfj8.onrender.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-block break-all font-mono font-semibold text-primary-700 underline underline-offset-2"
+        >
+          https://doctor-tracker-backend-gfj8.onrender.com
+        </a>
+        <p className="mt-1 text-[11px] text-amber-700">
+          Render may take 30–60 seconds to wake up a sleeping server.
+        </p>
+      </div>
+
       {/* Error Banner */}
       {errorMessage && (
         <div className="mb-5">

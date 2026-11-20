@@ -45,51 +45,69 @@ export const dashboardService = {
         api.get('/patients', { limit: 100 }),
       ]);
 
-      const docPayload = doctorsRes.data !== undefined ? doctorsRes.data : doctorsRes;
-      const patPayload = patientsRes.data !== undefined ? patientsRes.data : patientsRes;
+      const docPayload = doctorsRes?.data !== undefined ? doctorsRes.data : doctorsRes;
+      const patPayload = patientsRes?.data !== undefined ? patientsRes.data : patientsRes;
 
-      const doctors = Array.isArray(docPayload) ? docPayload : (docPayload.doctors || docPayload.items || []);
-      const patients = Array.isArray(patPayload) ? patPayload : (patPayload.patients || patPayload.items || []);
+      const extractList = (payload, keys) => {
+        if (Array.isArray(payload)) return payload;
+        for (const key of keys) {
+          if (Array.isArray(payload?.[key])) return payload[key];
+        }
+        return [];
+      };
 
-      const totalDoctors = docPayload.total ?? docPayload.totalCount ?? doctors.length;
-      const totalPatients = patPayload.total ?? patPayload.totalCount ?? patients.length;
+      const doctors = extractList(docPayload, ['doctors', 'items', 'data']);
+      const patients = extractList(patPayload, ['patients', 'items', 'data']);
 
-      // Patients per doctor calculation
+      const totalDoctors = docPayload?.total ?? docPayload?.totalCount ?? doctors.length;
+      const totalPatients = patPayload?.total ?? patPayload?.totalCount ?? patients.length;
+
+      // Normalize doctor-patient assignments across common backend schemas.
       const doctorPatientCounts = {};
       doctors.forEach((d) => {
         const id = d._id || d.id;
-        doctorPatientCounts[id] = {
-          name: d.name,
-          count: 0,
-        };
+        if (id) {
+          doctorPatientCounts[String(id)] = {
+            name: d.name || d.fullName || d.doctorName || 'Unknown Doctor',
+            count: Array.isArray(d.patients) ? d.patients.length : 0,
+          };
+        }
       });
 
       patients.forEach((p) => {
-        const docId = p.doctorId?._id || p.doctorId || p.doctor?._id || p.doctor;
-        if (docId && doctorPatientCounts[docId]) {
-          doctorPatientCounts[docId].count += 1;
+        const doctorValue = p.doctorId ?? p.doctor ?? p.assignedDoctor;
+        const docId = doctorValue?._id || doctorValue?.id || (typeof doctorValue === 'object' ? null : doctorValue);
+        if (docId && doctorPatientCounts[String(docId)]) {
+          doctorPatientCounts[String(docId)].count += 1;
         }
       });
 
       const patientsPerDoctor = Object.values(doctorPatientCounts).map((item) => ({
         doctor: item.name,
-        patients: item.count,
+        patients: Number(item.count) || 0,
       }));
 
       // Registration trends by date
       const dateMap = {};
       patients.forEach((p) => {
-        const d = p.createdAt || p.registeredAt || p.date;
+        const d = p.createdAt || p.registeredAt || p.registrationDate || p.date;
         if (d) {
-          const dateKey = new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-          dateMap[dateKey] = (dateMap[dateKey] || 0) + 1;
+          const parsedDate = new Date(d);
+          if (!Number.isNaN(parsedDate.getTime())) {
+            const dateKey = parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            dateMap[dateKey] = (dateMap[dateKey] || 0) + 1;
+          }
         }
       });
 
-      const registrationTrends = Object.entries(dateMap).map(([date, count]) => ({
-        date,
-        registrations: count,
-      }));
+      const registrationTrends = Object.entries(dateMap)
+        .map(([date, count]) => ({
+          date,
+          registrations: Number(count) || 0,
+          sortDate: new Date(date),
+        }))
+        .sort((a, b) => a.sortDate - b.sortDate)
+        .map(({ date, registrations }) => ({ date, registrations }));
 
       // Specialization distribution
       const specMap = {};
