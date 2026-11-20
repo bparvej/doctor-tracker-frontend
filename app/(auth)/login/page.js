@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Activity, Lock, Mail, ArrowRight, ShieldCheck, Loader2 } from 'lucide-react';
+import { Activity, Lock, Mail, ArrowRight, ShieldCheck, Loader2, Server } from 'lucide-react';
 import Input from '../../../components/common/Input';
 import Button from '../../../components/common/Button';
 import ErrorBanner from '../../../components/common/ErrorBanner';
@@ -21,6 +21,7 @@ function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isNetworkError, setIsNetworkError] = useState(false);
+  const [backendStatus, setBackendStatus] = useState('checking');
 
   // Check if redirected because of session expiry
   const sessionExpired = searchParams.get('expired') === 'true';
@@ -30,6 +31,35 @@ function LoginForm() {
       router.replace('/dashboard');
     }
   }, [isAuthenticated, authLoading, router]);
+
+  useEffect(() => {
+    let isCancelled = false;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    const wakeBackend = async () => {
+      try {
+        await fetch(APP_CONFIG.apiUrl.replace(/\/api\/?$/, ''), {
+          method: 'GET',
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        if (!isCancelled) setBackendStatus('online');
+      } catch (_error) {
+        if (!isCancelled) setBackendStatus('offline');
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    wakeBackend();
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -66,23 +96,6 @@ function LoginForm() {
           <span>Your session has expired. Please log in again to continue.</span>
         </div>
       )}
-
-      {/* Backend wake-up notice */}
-      <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">
-        <p className="font-semibold">Please enable the backend first.</p>
-        <p className="mt-1">Open the backend link and wait for it to start before signing in:</p>
-        <a
-          href="https://doctor-tracker-backend-gfj8.onrender.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 inline-block break-all font-mono font-semibold text-primary-700 underline underline-offset-2"
-        >
-          https://doctor-tracker-backend-gfj8.onrender.com
-        </a>
-        <p className="mt-1 text-[11px] text-amber-700">
-          Render may take 30–60 seconds to wake up a sleeping server.
-        </p>
-      </div>
 
       {/* Error Banner */}
       {errorMessage && (
@@ -135,14 +148,45 @@ function LoginForm() {
         </div>
       </form>
 
-      {/* Quick Demo Credentials / Environment Info */}
-      <div className="mt-6 pt-5 border-t border-slate-100 text-center">
-        <p className="text-[11px] text-slate-400">
-          Communicates with Express Backend at:
-        </p>
-        <code className="text-[11px] font-mono text-slate-600 bg-slate-50 px-2 py-0.5 rounded border border-slate-200 inline-block mt-1">
-          {APP_CONFIG.apiUrl}
-        </code>
+      {/* Backend Status Notice */}
+      <div
+        className={`mt-6 rounded-xl border p-3 text-xs leading-relaxed ${
+          backendStatus === 'online'
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+            : backendStatus === 'offline'
+              ? 'border-amber-200 bg-amber-50 text-amber-900'
+              : 'border-slate-200 bg-slate-50 text-slate-600'
+        }`}
+      >
+        <div className="flex items-start gap-2">
+          <Server className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <div>
+            <p className="font-semibold">
+              {backendStatus === 'checking' && 'Starting backend connection'}
+              {backendStatus === 'online' && 'Backend is online'}
+              {backendStatus === 'offline' && 'Please enable the backend first'}
+            </p>
+            {backendStatus === 'checking' && (
+              <p className="mt-1">Connecting to the Express server. This may take up to 60 seconds.</p>
+            )}
+            {backendStatus === 'online' && (
+              <p className="mt-1">The backend is ready. You can sign in now.</p>
+            )}
+            {backendStatus === 'offline' && (
+              <>
+                <p className="mt-1">Open the backend link and wait for Render to wake the server:</p>
+                <a
+                  href="https://doctor-tracker-backend-gfj8.onrender.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-block break-all font-mono font-semibold underline underline-offset-2"
+                >
+                  https://doctor-tracker-backend-gfj8.onrender.com
+                </a>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

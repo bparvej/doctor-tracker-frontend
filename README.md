@@ -7,6 +7,8 @@
 
 A modern, responsive, and secure administrative web application engineered for managing medical doctors, patients, clinical assignments, and system audit trails. Doctor Tracker communicates via RESTful JSON APIs with a standalone Express.js + MongoDB backend deployed on Render and is fully containerized and deployable to **Vercel**, **Render**, or any Docker-compatible infrastructure.
 
+**Elevator pitch:** Doctor Tracker is a secure, responsive healthcare administration portal for authorized staff to manage doctor profiles, patient records, clinical assignments, system users, audit trails, and operational analytics. It combines a modern Next.js interface with a separate Node.js/Express REST backend and MongoDB, emphasizing fast server-side filtering and pagination, meaningful Recharts dashboards, role-based access, and resilient backend error handling.
+
 - **Live Backend API**: [https://doctor-tracker-backend-gfj8.onrender.com/api](https://doctor-tracker-backend-gfj8.onrender.com/api)
 - **Interactive Swagger Documentation**: [https://doctor-tracker-backend-gfj8.onrender.com/api/docs](https://doctor-tracker-backend-gfj8.onrender.com/api/docs)
 
@@ -233,6 +235,52 @@ If the Express.js backend server on Render is paused (spinning down during idle)
 
 ---
 
-## 10. License
+## 10. Requirements Coverage & Technical Decisions
+
+### Requirements status
+
+| Requirement area | Status | Evidence |
+| :--- | :--- | :--- |
+| Authentication and protected routes | Implemented | JWT/Bearer sessions, `/auth/me` restoration, 401 handling, and dashboard layout protection |
+| Doctor CRUD and filtering | Implemented | Create, edit, delete, search, specialization/date filters, pagination, and detail views |
+| Doctor-patient association | Implemented | Assigned-patient list, register under doctor, and remove/unlink patient actions |
+| Patient CRUD and filtering | Implemented | Create, edit, delete, search, condition/doctor/date filters, and pagination |
+| Dashboard analytics | Implemented | Live totals and Recharts patients-per-doctor and registration-trend graphs |
+| Responsive modern UI/UX | Implemented | Tailwind responsive layouts, cards, modals, loading states, empty states, and toasts |
+| Password visibility and form guidance | Implemented | Shared password reveal toggle and clear placeholders across authentication and management forms |
+| Server-side search, filtering, pagination | Implemented | Query parameters, debounced search, configurable limits, and backend pagination support |
+| Error and backend-resilience handling | Implemented | Centralized API errors, timeout handling, offline detection, retry, and session-expiry notices |
+| MongoDB indexing/query optimization | Backend responsibility | Frontend sends optimized paginated/filter parameters; implementation depends on backend indexes and endpoint queries |
+| System audit trail | Implemented | Read-only searchable audit records and sanitized detail modal |
+| RBAC | Partially implemented | Frontend and API support `ADMIN`/`VIEWER`; final enforcement must be verified in the backend |
+| Visual evidence (screenshots) | Pending | Add desktop and mobile screenshots before final submission |
+| Submitted credentials/repository link | Pending | Add the public repository URL and demo credentials securely if required |
+
+### Technical decisions
+
+1. **Next.js App Router + React Context**: App Router groups public and protected screens cleanly, while React Context is lightweight for authentication and toast state. It avoids unnecessary Redux boilerplate for the current application scope.
+2. **Native Fetch through a centralized API client**: The shared client avoids a larger HTTP dependency, gives consistent Bearer headers and error handling, supports request timeout handling, and normalizes network, authorization, and HTTP failures.
+
+### System architecture
+
+```text
+Browser / Next.js Client
+  -> Protected and public route groups
+  -> React components and Context providers
+  -> Shared REST services (services/*.service.js)
+  -> Centralized Fetch API client (services/api.js)
+  -> Express REST API
+  -> MongoDB
+```
+
+### Visual evidence
+
+Add screenshots to `screenshots/` and link them here before final submission:
+
+- Dashboard desktop and mobile
+- Doctor management desktop and mobile
+- Patient management desktop and mobile
+
+## 11. License
 
 This project is licensed under the MIT License.
