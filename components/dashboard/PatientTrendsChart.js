@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  LabelList,
 } from 'recharts';
 import EmptyState from '../common/EmptyState';
 import { TrendingUp } from 'lucide-react';
@@ -61,6 +62,7 @@ export default function PatientTrendsChart({ data = [] }) {
           />
           <YAxis
             allowDecimals={false}
+            domain={[0, 'dataMax + 1']}
             tick={{ fill: '#64748b', fontSize: 11 }}
             tickLine={false}
             axisLine={{ stroke: '#e2e8f0' }}
@@ -82,7 +84,14 @@ export default function PatientTrendsChart({ data = [] }) {
             strokeWidth={2.5}
             dot={{ r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#ffffff' }}
             activeDot={{ r: 6, fill: '#1d4ed8' }}
-          />
+          >
+            <LabelList
+              dataKey="registrations"
+              position="top"
+              formatter={(value) => `${value} Patients`}
+              contentStyle={{ fontSize: '12px', fill: '#2563eb' }}
+            />
+          </Line>
         </LineChart>
       </ResponsiveContainer>
     </div>
