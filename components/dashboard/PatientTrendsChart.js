@@ -14,7 +14,27 @@ import EmptyState from '../common/EmptyState';
 import { TrendingUp } from 'lucide-react';
 
 export default function PatientTrendsChart({ data = [] }) {
-  if (!data || data.length === 0) {
+  const aggregatedData = new Map();
+
+  data.forEach((item) => {
+    const rawDate = item.date || item.label || item._id || item.createdAt || item.registrationDate;
+    const parsedDate = rawDate ? new Date(rawDate) : null;
+    const date = parsedDate && !Number.isNaN(parsedDate.getTime())
+      ? parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : String(rawDate || '').trim();
+    const registrations = Number(item.registrations ?? item.count ?? item.patients ?? item.total ?? 0);
+
+    if (date) {
+      aggregatedData.set(date, (aggregatedData.get(date) || 0) + (Number.isFinite(registrations) ? registrations : 0));
+    }
+  });
+
+  const formattedData = Array.from(aggregatedData, ([date, registrations]) => ({
+    date,
+    registrations,
+  })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  if (formattedData.length === 0) {
     return (
       <EmptyState
         title="No Registration Trends"
@@ -24,18 +44,6 @@ export default function PatientTrendsChart({ data = [] }) {
       />
     );
   }
-
-  const formattedData = data
-    .map((item) => {
-      const rawDate = item.date || item.label || item._id || item.createdAt || item.registrationDate;
-      const parsedDate = rawDate ? new Date(rawDate) : null;
-      const date = parsedDate && !Number.isNaN(parsedDate.getTime())
-        ? parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-        : String(rawDate || '');
-      const registrations = Number(item.registrations ?? item.count ?? item.patients ?? item.total ?? 0);
-      return { date, registrations: Number.isFinite(registrations) ? registrations : 0 };
-    })
-    .filter((item) => item.date);
 
   return (
     <div className="w-full h-72">

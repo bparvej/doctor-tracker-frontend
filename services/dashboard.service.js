@@ -35,14 +35,14 @@ export const dashboardService = {
             statsPayload.data?.registrationTrends || statsPayload.data?.patientTrends ||
             stats.registrationTrends || stats.patientTrends || [];
 
-          const patientsPerDoctor = (Array.isArray(rawPatientsPerDoctor) ? rawPatientsPerDoctor : [])
+          let patientsPerDoctor = (Array.isArray(rawPatientsPerDoctor) ? rawPatientsPerDoctor : [])
             .map((item) => ({
               doctor: item.doctor || item.name || item.doctorName || item.fullName || 'Unknown Doctor',
               patients: Number(item.patients ?? item.count ?? item.patientCount ?? 0),
             }))
             .filter((item) => item.doctor && Number.isFinite(item.patients));
 
-          const registrationTrends = (Array.isArray(rawRegistrationTrends) ? rawRegistrationTrends : [])
+          let registrationTrends = (Array.isArray(rawRegistrationTrends) ? rawRegistrationTrends : [])
             .map((item) => {
               const date = item.date || item.label || item._id || item.createdAt || item.registrationDate;
               const parsedDate = date ? new Date(date) : null;
@@ -136,7 +136,7 @@ export const dashboardService = {
         }
       });
 
-      const registrationTrends = Object.entries(dateMap)
+      let registrationTrends = Object.entries(dateMap)
         .map(([date, count]) => ({
           date,
           registrations: Number(count) || 0,
