@@ -101,7 +101,7 @@ function LoginForm() {
           name="email"
           id="email"
           autoComplete="username"
-          placeholder="admin@hospital.org"
+          placeholder="Enter your email or username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           icon={Mail}
@@ -114,7 +114,7 @@ function LoginForm() {
           name="password"
           id="password"
           autoComplete="current-password"
-          placeholder="••••••••"
+          placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           icon={Lock}

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Input = forwardRef(function Input(
   {
@@ -16,7 +17,10 @@ const Input = forwardRef(function Input(
   },
   ref
 ) {
-  const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+  const inputId = id || (label ? label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : undefined);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const isPassword = type === 'password';
+  const inputType = isPassword ? (isPasswordVisible ? 'text' : 'password') : type;
 
   return (
     <div className="w-full">
@@ -35,17 +39,28 @@ const Input = forwardRef(function Input(
         <input
           ref={ref}
           id={inputId}
-          type={type}
+          type={inputType}
           required={required}
           className={`block w-full rounded-lg border text-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:bg-slate-50 disabled:text-slate-500 ${
-            Icon ? 'pl-9 pr-3' : 'px-3.5'
-          } py-2.5 ${
+            Icon ? 'pl-9' : 'pl-3.5'
+          } ${isPassword ? 'pr-11' : 'pr-3.5'} py-2.5 ${
             error
               ? 'border-rose-300 text-rose-900 placeholder-rose-300 focus:border-rose-500 focus:ring-rose-200'
               : 'border-slate-300 text-slate-900 placeholder-slate-400 focus:border-primary-500 focus:ring-primary-100'
           } ${className}`}
           {...props}
         />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setIsPasswordVisible((visible) => !visible)}
+            className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-lg text-slate-400 transition-colors hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-200"
+            aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
+            aria-pressed={isPasswordVisible}
+          >
+            {isPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        )}
       </div>
 
       {error ? (

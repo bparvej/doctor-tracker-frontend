@@ -24,9 +24,17 @@ export default function UserFormModal({ isOpen, onClose, onSubmit, user = null, 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Edit User' : 'Create User'} subtitle={isEditing ? 'Update account details and access.' : 'Add a new administrator or viewer.'}>
       <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="space-y-4">
-        <Input label="Full Name" name="name" value={form.name} onChange={change} required />
-        <Input label="Email" name="email" type="email" value={form.email} onChange={change} required />
-        <Input label={isEditing ? 'Password (leave blank to keep current)' : 'Password'} name="password" type="password" value={form.password} onChange={change} required={!isEditing} />
+        <Input label="Full Name" name="name" placeholder="Alex Morgan" value={form.name} onChange={change} required />
+        <Input label="Email" name="email" type="email" placeholder="alex.morgan@hospital.org" value={form.email} onChange={change} required />
+        <Input
+          label={isEditing ? 'Password (leave blank to keep current)' : 'Password'}
+          name="password"
+          type="password"
+          placeholder={isEditing ? 'Enter a new password or leave blank' : 'Create a secure password'}
+          value={form.password}
+          onChange={change}
+          required={!isEditing}
+        />
         <Select label="Role" name="role" value={form.role} onChange={change} disabled={isSelf} options={[{ value: 'ADMIN', label: 'Admin' }, { value: 'VIEWER', label: 'Viewer' }]} />
         {isSelf && <p className="text-xs text-amber-700">You cannot change your own role.</p>}
         <label className="flex items-center gap-3 text-sm text-slate-700">
