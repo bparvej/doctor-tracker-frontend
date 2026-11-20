@@ -253,7 +253,7 @@ If the Express.js backend server on Render is paused (spinning down during idle)
 | MongoDB indexing/query optimization | Backend responsibility | Frontend sends optimized paginated/filter parameters; implementation depends on backend indexes and endpoint queries |
 | System audit trail | Implemented | Read-only searchable audit records and sanitized detail modal |
 | RBAC | Partially implemented | Frontend and API support `ADMIN`/`VIEWER`; final enforcement must be verified in the backend |
-| Visual evidence (screenshots) | Pending | Add desktop and mobile screenshots before final submission |
+| Visual evidence (screenshots) | Partially implemented | Login desktop/mobile screenshots are included; remaining protected-page screenshots should be added |
 | Submitted credentials/repository link | Pending | Add the public repository URL and demo credentials securely if required |
 
 ### Technical decisions
@@ -275,11 +275,13 @@ Browser / Next.js Client
 
 ### Visual evidence
 
-Add screenshots to `screenshots/` and link them here before final submission:
+#### Login page
 
-- Dashboard desktop and mobile
-- Doctor management desktop and mobile
-- Patient management desktop and mobile
+| Desktop | Mobile |
+| :---: | :---: |
+| ![Login page desktop](screenshots/login-desktop.png) | ![Login page mobile](screenshots/login-mobile.png) |
+
+Additional dashboard, doctor-management, and patient-management desktop/mobile screenshots can be added to `screenshots/` and displayed in this section before final submission.
 
 ## 11. License
 
