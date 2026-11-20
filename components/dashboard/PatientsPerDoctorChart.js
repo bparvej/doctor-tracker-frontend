@@ -25,11 +25,20 @@ export default function PatientsPerDoctorChart({ data = [] }) {
     );
   }
 
-  // Format data: truncate long names for axis readability
-  const formattedData = data.slice(0, 10).map((item) => ({
-    ...item,
-    displayName: item.doctor?.length > 12 ? `${item.doctor.slice(0, 10)}...` : item.doctor,
-  }));
+  // Normalize API variants and truncate long names for axis readability.
+  const formattedData = data
+    .map((item) => {
+      const doctor = item.doctor || item.name || item.doctorName || item.fullName || 'Unknown Doctor';
+      const patients = Number(item.patients ?? item.count ?? item.patientCount ?? 0);
+      return {
+        ...item,
+        doctor,
+        patients: Number.isFinite(patients) ? patients : 0,
+        displayName: doctor.length > 12 ? `${doctor.slice(0, 10)}...` : doctor,
+      };
+    })
+    .filter((item) => item.patients >= 0)
+    .slice(0, 10);
 
   return (
     <div className="w-full h-72">

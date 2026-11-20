@@ -9,18 +9,54 @@ export const dashboardService = {
       // 1. Attempt dedicated live backend /dashboard/stats endpoint
       try {
         const response = await api.get('/dashboard/stats');
-        const stats = response.data !== undefined ? response.data : response;
-        if (stats && (stats.totalDoctors !== undefined || stats.stats || stats.overview)) {
-          const overview = stats.overview || stats;
-          
-          // Also fetch recent doctors and patients for the dashboard tables
+        const statsPayload = response?.data !== undefined ? response.data : response;
+        const stats = statsPayload?.stats || statsPayload?.overview ? { ...(statsPayload.stats || statsPayload.overview), ...(statsPayload?.data || {}), ...(statsPayload?.charts || {}) } : statsPayload;
+
+        if (stats && (statsPayload.totalDoctors !== undefined || statsPayload.stats || statsPayload.overview || stats.totalDoctors !== undefined || stats.doctorsCount !== undefined)) {
+          const overview = statsPayload.overview || statsPayload.stats || statsPayload || stats;
+
           const [doctorsRes, patientsRes] = await Promise.all([
-            api.get('/doctors', { limit: 5 }).catch(() => ({ data: [] })),
-            api.get('/patients', { limit: 5 }).catch(() => ({ data: [] })),
+            api.get('/doctors', { limit: 100 }).catch(() => ({ data: [] })),
+            api.get('/patients', { limit: 100 }).catch(() => ({ data: [] })),
           ]);
 
-          const recentDocs = doctorsRes.data?.items || doctorsRes.data || doctorsRes.doctors || [];
-          const recentPats = patientsRes.data?.items || patientsRes.data || patientsRes.patients || [];
+          const doctorsPayload = doctorsRes?.data !== undefined ? doctorsRes.data : doctorsRes;
+          const patientsPayload = patientsRes?.data !== undefined ? patientsRes.data : patientsRes;
+          const recentDocs = Array.isArray(doctorsPayload) ? doctorsPayload : (doctorsPayload?.items || doctorsPayload?.doctors || doctorsPayload?.data || []);
+          const recentPats = Array.isArray(patientsPayload) ? patientsPayload : (patientsPayload?.items || patientsPayload?.patients || patientsPayload?.data || []);
+
+          const rawPatientsPerDoctor =
+            statsPayload.patientsPerDoctor || statsPayload.patientsByDoctor || statsPayload.charts?.patientsPerDoctor ||
+            statsPayload.data?.patientsPerDoctor || statsPayload.data?.patientsByDoctor ||
+            stats.patientsPerDoctor || stats.patientsByDoctor || [];
+
+          const rawRegistrationTrends =
+            statsPayload.registrationTrends || statsPayload.patientTrends || statsPayload.charts?.registrationTrends ||
+            statsPayload.data?.registrationTrends || statsPayload.data?.patientTrends ||
+            stats.registrationTrends || stats.patientTrends || [];
+
+          const patientsPerDoctor = (Array.isArray(rawPatientsPerDoctor) ? rawPatientsPerDoctor : [])
+            .map((item) => ({
+              doctor: item.doctor || item.name || item.doctorName || item.fullName || 'Unknown Doctor',
+              patients: Number(item.patients ?? item.count ?? item.patientCount ?? 0),
+            }))
+            .filter((item) => item.doctor && Number.isFinite(item.patients));
+
+          const registrationTrends = (Array.isArray(rawRegistrationTrends) ? rawRegistrationTrends : [])
+            .map((item) => {
+              const date = item.date || item.label || item._id || item.createdAt || item.registrationDate;
+              const parsedDate = date ? new Date(date) : null;
+              return {
+                date: parsedDate && !Number.isNaN(parsedDate.getTime())
+                  ? parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                  : String(date || ''),
+                registrations: Number(item.registrations ?? item.count ?? item.patients ?? item.total ?? 0),
+                sortDate: parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : new Date(0),
+              };
+            })
+            .filter((item) => item.date && Number.isFinite(item.registrations))
+            .sort((a, b) => a.sortDate - b.sortDate)
+            .map(({ date, registrations }) => ({ date, registrations }));
 
           return {
             totalDoctors: overview.totalDoctors ?? overview.doctorsCount ?? 0,
@@ -30,9 +66,9 @@ export const dashboardService = {
             ),
             recentDoctors: Array.isArray(recentDocs) ? recentDocs.slice(0, 5) : [],
             recentPatients: Array.isArray(recentPats) ? recentPats.slice(0, 5) : [],
-            patientsPerDoctor: stats.patientsPerDoctor || overview.patientsPerDoctor || [],
-            registrationTrends: stats.registrationTrends || overview.registrationTrends || [],
-            specializationDistribution: stats.specializationDistribution || overview.specializationDistribution || [],
+            patientsPerDoctor,
+            registrationTrends,
+            specializationDistribution: stats.specializationDistribution || statsPayload.specializationDistribution || overview.specializationDistribution || [],
           };
         }
       } catch (statsErr) {

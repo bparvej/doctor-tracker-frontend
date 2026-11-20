@@ -25,11 +25,23 @@ export default function PatientTrendsChart({ data = [] }) {
     );
   }
 
+  const formattedData = data
+    .map((item) => {
+      const rawDate = item.date || item.label || item._id || item.createdAt || item.registrationDate;
+      const parsedDate = rawDate ? new Date(rawDate) : null;
+      const date = parsedDate && !Number.isNaN(parsedDate.getTime())
+        ? parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        : String(rawDate || '');
+      const registrations = Number(item.registrations ?? item.count ?? item.patients ?? item.total ?? 0);
+      return { date, registrations: Number.isFinite(registrations) ? registrations : 0 };
+    })
+    .filter((item) => item.date);
+
   return (
     <div className="w-full h-72">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
-          data={data}
+          data={formattedData}
           margin={{ top: 10, right: 10, left: -20, bottom: 10 }}
         >
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
